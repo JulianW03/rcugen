@@ -8,18 +8,33 @@ export const createPaths = async (
         if (typeof some === "string") {
             console.log("Creating type for: " + some);
             if (some.startsWith("vector of")) {
+                const substr = some.substring("vector of ".length);
+
+                if (substr.length <= 0) {
+                    return {
+                        $ref: "#/components/schemas/AnyValue"
+                    }
+                }
+
                 return {
                     type: "array",
-                    items: createType(some.substring("vector of ".length))
+                    items: createType(substr)
                 }
             } else if (some.startsWith("map of")) {
+                const substr = some.substring("map of ".length);
+                if (substr.length <= 0) {
+                    return {
+                        $ref: "#/components/schemas/AnyValue"
+                    }
+                }
+
                 return {
                     type: "object",
-                    additionalProperties: createType(some.substring("map of ".length))
+                    additionalProperties: createType(substr)
                 }
             } else if (some === "object" || some === " " || some === "") {
                 return {
-                    $ref: "#/components/schemas/AnyType"
+                    $ref: "#/components/schemas/AnyValue"
                 }
             }
 
@@ -36,7 +51,7 @@ export const createPaths = async (
         some = objectNameOverrides[some] || some;
 
         if (some === "0") {
-            some = "AnyType";
+            some = "AnyValue";
         }
         return {
             "$ref": "#/components/schemas/" + some
@@ -61,8 +76,8 @@ export const createPaths = async (
         }
     )
 
-    // console.log(consoleHelp.functions);
-    // console.log(JSON.stringify(fullHelp.functions, null, 2));
+    console.log(JSON.stringify(consoleHelp.functions, null, 2));
+    console.log(JSON.stringify(fullHelp.functions, null, 2));
     const someObject = {}
     const arr = fullHelp.functions as any[];
     arr.map((item) => {
@@ -80,7 +95,8 @@ export const createPaths = async (
 
         let tags = item.tags.filter((tag => tag !== "$remoting-binding-module" && tag !== "Plugins"));
         if (tags.length === 0) {
-            tags = ["core-sdk"];
+            const match = urlString.match(/[^\/?#]+/);
+            tags = match ? [`Plugin ${match[0]}`] : ["Plugin core-sdk"];
         }
 
         const httpMethod = assocHelp.http_method.toLowerCase();
@@ -116,9 +132,8 @@ export const createPaths = async (
                     if (paramName.startsWith("<") && paramName.endsWith(">")) {
                         paramName = paramName.slice(1, -1);
                         paramToLocation[paramName] = "query";
-                    } else {
-                        paramToLocation[paramName] = "query";
                     }
+                    paramToLocation[paramName] = "query";
                 } else if (paramName.startsWith("<") && paramName.endsWith(">")) {
                     paramName = paramName.slice(1, -1);
                     //Sometimes path params are noted like {+path}

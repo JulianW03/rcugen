@@ -136,17 +136,17 @@ export const createSchema = async (
 
     const createRef = (name: string): OpenApiReference => {
         if (name === "" || name === " ") {
-            console.warn("Name is empty, (most likely map / array resolve issue) using AnyType as default");
-            name = "AnyType";
+            console.warn("Name is empty, (most likely map / array resolve issue) using AnyValue as default");
+            name = "AnyValue";
         } else if (isArrayType(name) || isMapType(name)) {
-            console.warn("Nested type detected, using AnyType as default");
-            name = "AnyType";
+            console.warn("Nested type detected, using AnyValue as default");
+            name = "AnyValue";
         } else if (name === '0') {
-            console.warn("Name is 0, probably a type resolution issue, using AnyType as default");
-            name = "AnyType";
+            console.warn("Name is 0, probably a type resolution issue, using AnyValue as default");
+            name = "AnyValue";
         } else if (name == undefined || name == 'object') {
-            console.warn(`Name is undefined or has an illegal value, using AnyType as default. Original name: ${name}`);
-            name = "AnyType";
+            console.warn(`Name is undefined or has an illegal value, using AnyValue as default. Original name: ${name}`);
+            name = "AnyValue";
         }
 
         if (isPrimitiveType(name)) {
@@ -263,30 +263,10 @@ export const createSchema = async (
     )
 
     const schemas = someToOpenApiObject(consoleResponse.types);
-    schemas.set("AnyType", {
+    schemas.set("AnyValue", {
             // @ts-ignore
             "nullable": true,
-            "anyOf": [
-                {
-                    "type": "object",
-                },
-                {
-                    "type": "string",
-                },
-                {
-                    "type": "number",
-                },
-                {
-                    "type": "boolean",
-                },
-                {
-                    "type": "integer",
-                },
-                {
-                    "type": "array",
-                    "items": {}
-                }
-            ]
+            "x-java-type": "java.lang.Object"
         }
     )
 
