@@ -1,9 +1,5 @@
-# Publishes to npm when a version tag (v1.2.3) is pushed, e.g. after
+# Stages a release on npm when a version tag (v1.2.3) is pushed, e.g. after
 #   npm version minor && git push --follow-tags
-#
-# Uses npm trusted publishing (OIDC): no npm token is stored in GitHub. Configure it
-# once on npmjs.com -> rcugen -> Settings -> Trusted Publisher -> GitHub Actions
-# (owner Julianw03, repository rcugen, workflow publish.yml).
 name: Publish to npm
 
 on:
@@ -12,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # lets npm verify this workflow (trusted publishing + provenance)
+  id-token: write
 
 jobs:
   publish:
@@ -25,7 +21,7 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org
 
-      - name: Update npm (trusted publishing needs npm >= 11.5.1)
+      - name: Update npm (staged publishing needs npm >= 11.15.0)
         run: npm install -g npm@latest
 
       - name: Tag must match package.json version
@@ -38,5 +34,4 @@ jobs:
 
       - run: npm ci
 
-      # prepublishOnly runs `npm test` (clean build + unit tests) before uploading
-      - run: npm publish
+      - run: npm stage publish .
