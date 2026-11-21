@@ -1,6 +1,6 @@
 {
   "name": "rcugen",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Generates OpenAPI and AsyncAPI documents from the Riot Client's /help self-description",
   "repository": {
     "type": "git",
