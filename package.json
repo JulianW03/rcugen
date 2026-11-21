@@ -4,11 +4,11 @@
   "description": "Generates OpenAPI and AsyncAPI documents from the Riot Client's /help self-description",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Julianw03/rcugen.git"
+    "url": "git+https://github.com/JulianW03/rcugen.git"
   },
-  "homepage": "https://github.com/Julianw03/rcugen#readme",
+  "homepage": "https://github.com/JulianW03/rcugen#readme",
   "bugs": {
-    "url": "https://github.com/Julianw03/rcugen/issues"
+    "url": "https://github.com/JulianW03/rcugen/issues"
   },
   "bin": {
     "rcugen": "dist/cli.js"
