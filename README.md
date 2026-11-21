@@ -21,7 +21,7 @@ npx rcugen
 
 Both files are written to `./out`. You need Node.js 20 or newer.
 
-What you get depends on the client's current state. For example, you see more events while you're logged in.
+For the complete list of WebSocket events, generate after you've logged in at least once. Chat, social, voice chat and similar services only register their events after a login.
 
 ### Examples
 
