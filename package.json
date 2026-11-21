@@ -1,11 +1,14 @@
 {
   "name": "rcugen",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Generates OpenAPI and AsyncAPI documents from the Riot Client's /help self-description",
+  "main": "dist/cli.js",
   "scripts": {
-    "build": "tsc && node --env-file=./.env ./dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc",
+    "generate": "npm run build && node --env-file-if-exists=.env dist/cli.js",
+    "test": "npm run build && node --test \"dist/**/*.test.js\"",
+    "compare-builtin": "npm run build && node --env-file-if-exists=.env dist/tools/compareBuiltin.js"
   },
   "keywords": [],
   "author": "",

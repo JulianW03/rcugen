@@ -3,3 +3,9 @@
 /dist
 /node_modules
 /out
+*.tsbuildinfo
+
+# debug dumps
+output*.txt
+*.log
+help-snapshot*.json
