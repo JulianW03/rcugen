@@ -116,7 +116,7 @@ function buildTypes(rawTypes: RawType[], rename: (n: string) => string, resolveR
     for (const names of byLowerName.values()) {
         if (names.length > 1) {
             log.warn(`Type names differ only in case: ${names.join(", ")} `
-                + "(clashes on case-insensitive file systems; add an entry to the overrides file)");
+                + "(clashes on case-insensitive file systems; rename one via --overrides)");
         }
     }
 

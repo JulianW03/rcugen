@@ -4,14 +4,16 @@
  * arguments differently. Exits with code 1 on any placement mismatch.
  *
  *   npm run compare-builtin [-- --input snapshot.json --swagger builtin.json --verbose]
+ *
+ * Accepts the same --overrides and credential options as the CLI.
  */
 import * as fs from "node:fs";
 import {parseArgs} from "node:util";
 import {buildModel} from "../model/buildModel.js";
 import type {Operation} from "../model/model.js";
-import {resolveCredentials, RiotClient} from "../source/client.js";
+import {CREDENTIAL_ARGS, resolveCredentials, RiotClient} from "../source/client.js";
 import {fetchSnapshot, loadSnapshot} from "../source/help.js";
-import {loadNameOverrides} from "../source/overrides.js";
+import {resolveNameOverrides} from "../source/overrides.js";
 import {log, setVerbose} from "../util/log.js";
 
 interface BuiltinParameter {
@@ -53,18 +55,19 @@ async function main(): Promise<void> {
             input: {type: "string"},
             swagger: {type: "string"},
             overrides: {type: "string"},
+            ...CREDENTIAL_ARGS,
             verbose: {type: "boolean", default: false},
         },
     });
     setVerbose(values.verbose);
 
     const needsClient = !values.input || !values.swagger;
-    const client = needsClient ? new RiotClient(resolveCredentials()) : undefined;
+    const client = needsClient ? new RiotClient(resolveCredentials(values)) : undefined;
     const snapshot = values.input ? loadSnapshot(values.input) : await fetchSnapshot(client!);
     const builtin: BuiltinSpec = values.swagger
         ? JSON.parse(fs.readFileSync(values.swagger, "utf-8"))
         : await client!.get<BuiltinSpec>("/swagger/v3/openapi.json");
-    const model = buildModel(snapshot, {nameOverrides: loadNameOverrides(values.overrides)});
+    const model = buildModel(snapshot, {nameOverrides: resolveNameOverrides(values.overrides)});
     const ours = new Map(model.operations.map((op) => [op.name, op]));
 
     let compared = 0;

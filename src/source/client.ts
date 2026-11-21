@@ -25,22 +25,57 @@ export function parseLockfile(content: string): ClientCredentials {
     return {port, password};
 }
 
+/** Credential sources given on the command line. */
+export interface CredentialOptions {
+    port?: string;
+    secret?: string;
+    lockfile?: string;
+}
+
+/** `parseArgs` option definitions matching {@link CredentialOptions}. */
+export const CREDENTIAL_ARGS = {
+    port: {type: "string"},
+    secret: {type: "string"},
+    lockfile: {type: "string"},
+} as const;
+
+export const CREDENTIAL_USAGE = `  --port <port>           Riot Client port      } both required; override PORT/SECRET
+  --secret <password>     Riot Client password  } and the lockfile
+  --lockfile <file>       read port and password from this lockfile`;
+
+function parsePort(value: string, source: string): number {
+    const port = Number(value);
+    if (!Number.isInteger(port) || port <= 0 || port > 65535) throw new Error(`Invalid port from ${source}: ${value}`);
+    return port;
+}
+
+function readLockfile(file: string): ClientCredentials {
+    if (!fs.existsSync(file)) throw new Error(`Lockfile not found: ${file}`);
+    return parseLockfile(fs.readFileSync(file, "utf-8"));
+}
+
 /**
- * Credentials come from `PORT` + `SECRET` if both are set, otherwise from the
- * Riot Client lockfile (`%LOCALAPPDATA%\Riot Games\Riot Client\Config\lockfile`).
+ * First match wins:
+ * 1. `--port` + `--secret`
+ * 2. `--lockfile <file>`
+ * 3. `PORT` + `SECRET` environment variables
+ * 4. the default lockfile (`%LOCALAPPDATA%\Riot Games\Riot Client\Config\lockfile`, Windows only)
  */
-export function resolveCredentials(env: NodeJS.ProcessEnv = process.env): ClientCredentials {
-    if (env.PORT && env.SECRET) {
-        const port = Number(env.PORT);
-        if (!Number.isInteger(port) || port <= 0) throw new Error(`Invalid PORT: ${env.PORT}`);
-        return {port, password: env.SECRET};
+export function resolveCredentials(options: CredentialOptions = {}, env: NodeJS.ProcessEnv = process.env): ClientCredentials {
+    if (options.port !== undefined || options.secret !== undefined) {
+        if (options.port === undefined || options.secret === undefined) {
+            throw new Error("--port and --secret must be given together");
+        }
+        return {port: parsePort(options.port, "--port"), password: options.secret};
     }
+    if (options.lockfile !== undefined) return readLockfile(options.lockfile);
+    if (env.PORT && env.SECRET) return {port: parsePort(env.PORT, "PORT"), password: env.SECRET};
+
     const lockfile = defaultLockfilePath(env);
-    if (lockfile && fs.existsSync(lockfile)) {
-        return parseLockfile(fs.readFileSync(lockfile, "utf-8"));
-    }
+    if (lockfile && fs.existsSync(lockfile)) return readLockfile(lockfile);
     throw new Error(
-        "No Riot Client credentials: set PORT and SECRET (e.g. in .env) or start the Riot Client so its lockfile exists"
+        "No Riot Client credentials: pass --port and --secret, pass --lockfile <file>, set PORT and SECRET, "
+        + "or start the Riot Client so its lockfile exists"
         + (lockfile ? ` (${lockfile})` : "") + ". Use --input <snapshot> to work offline."
     );
 }

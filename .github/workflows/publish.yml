@@ -1,0 +1,42 @@
+# Publishes to npm when a version tag (v1.2.3) is pushed, e.g. after
+#   npm version minor && git push --follow-tags
+#
+# Uses npm trusted publishing (OIDC): no npm token is stored in GitHub. Configure it
+# once on npmjs.com -> rcugen -> Settings -> Trusted Publisher -> GitHub Actions
+# (owner Julianw03, repository rcugen, workflow publish.yml).
+name: Publish to npm
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write # lets npm verify this workflow (trusted publishing + provenance)
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Update npm (trusted publishing needs npm >= 11.5.1)
+        run: npm install -g npm@latest
+
+      - name: Tag must match package.json version
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $version"
+            exit 1
+          fi
+
+      - run: npm ci
+
+      # prepublishOnly runs `npm test` (clean build + unit tests) before uploading
+      - run: npm publish

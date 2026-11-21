@@ -1,25 +1,41 @@
 {
   "name": "rcugen",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Generates OpenAPI and AsyncAPI documents from the Riot Client's /help self-description",
-  "main": "dist/cli.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Julianw03/rcugen.git"
+  },
+  "homepage": "https://github.com/Julianw03/rcugen#readme",
+  "bugs": {
+    "url": "https://github.com/Julianw03/rcugen/issues"
+  },
+  "bin": {
+    "rcugen": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.js",
+    "!dist/testing",
+    "!dist/tools"
+  ],
   "scripts": {
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "build": "npm run clean && tsc",
     "generate": "npm run build && node --env-file-if-exists=.env dist/cli.js",
     "test": "npm run build && node --test \"dist/**/*.test.js\"",
-    "compare-builtin": "npm run build && node --env-file-if-exists=.env dist/tools/compareBuiltin.js"
+    "compare-builtin": "npm run build && node --env-file-if-exists=.env dist/tools/compareBuiltin.js",
+    "prepublishOnly": "npm test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "cross-env": "^7.0.3",
+    "@types/node": "^22.14.1",
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@types/node": "^22.14.1",
-    "axios": "^1.8.4"
+    "axios": "^1.20.0"
   }
 }
